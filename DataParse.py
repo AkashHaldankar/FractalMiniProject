@@ -15,9 +15,12 @@ reviewscount = 0
 ReviewPresent = False
 maincount = 0
 NProblem = False
+#Calculate Indent of Line
 def indent(line):
     strip = line.lstrip()
     return len(line) - len(strip)
+
+#Returns Valid Date
 def yield_valid_dates(dateStr):
     for match in re.finditer(r"\d{4}-\d{1,2}-\d{1,2}", dateStr):
         try:
@@ -26,6 +29,7 @@ def yield_valid_dates(dateStr):
         except ValueError:
             print "Date Format Error"
             pass
+
 #Program starts here
 with open("C:\\Users\\Akash\\Documents\\Akash\\Fractal_MiniProject\\amazon-meta.txt") as file:
     for line in file:
@@ -38,6 +42,8 @@ with open("C:\\Users\\Akash\\Documents\\Akash\\Fractal_MiniProject\\amazon-meta.
             countreviews = 0
             print "ASIN ID", ASINID
             ASINcol.append(ASINID)
+        
+        #Check for discontinued product
         if(indentval == 2 and (line.strip()=="discontinued product")):
             datecol.append("NULL")
             Custcol.append("NULL")
@@ -45,6 +51,8 @@ with open("C:\\Users\\Akash\\Documents\\Akash\\Fractal_MiniProject\\amazon-meta.
             Votescol.append("NULL")
             Helpfulcol.append("NULL")
             Groupcol.append("NULL")
+        
+        #Identify Reviews
         if(indentval == 2 and keyvalue[0].strip() == "reviews"):
             Count = re.sub("downloaded","",keyvalue[2].strip()).strip()
             print "Count-Total", Count
@@ -61,6 +69,7 @@ with open("C:\\Users\\Akash\\Documents\\Akash\\Fractal_MiniProject\\amazon-meta.
             else:
                 maincount += Count
             if(Count == Downloaded):
+                #Flag created because of mistakes within the file
                 NProblem = True
             elif(Count != Downloaded):
                 NProblem = False
@@ -69,10 +78,14 @@ with open("C:\\Users\\Akash\\Documents\\Akash\\Fractal_MiniProject\\amazon-meta.
                 Ratingcol.append("NULL")
                 Votescol.append("NULL")
                 Helpfulcol.append("NULL")
+        
+        #Extract Group of product
         if(indentval == 2 and line.split(":")[0].strip() == "group"):
             group = line.split(":")[1]
             print "Group", group
             Groupcol.append(group)
+
+        #Parse Reviews line to gather review info
         if(indentval == 4 and NProblem == True):
             ReviewPresent = True
             countreviews += 1
@@ -97,6 +110,7 @@ with open("C:\\Users\\Akash\\Documents\\Akash\\Fractal_MiniProject\\amazon-meta.
                 if(countreviews!=1):
                     ASINcol.append(ASINID)
                 break;
+
 print "ASIN COl", len(ASINcol)
 print "Customer col", len(Custcol)
 print "Rating Col", len(Ratingcol)
@@ -105,6 +119,8 @@ print "Helpful col", len(Helpfulcol)
 print "Date col", len(datecol)
 print "Group col", len(Groupcol)
 print "Main Count", maincount
+
+#Save CSV File
 with open("C:\\Users\\Akash\\Documents\\Akash\\Fractal_MiniProject\\Output.csv", 'wb') as f:
     writer = csv.writer(f)
     writer.writerows(izip(ASINcol,Custcol,Ratingcol,Votescol,Helpfulcol,datecol))
