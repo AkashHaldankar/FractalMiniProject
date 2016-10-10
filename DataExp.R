@@ -9,6 +9,9 @@ Groups <- read.table("~/Akash/Fractal_MiniProject/Groups.csv", quote="\"", comme
 #Change col Names
 colnames(Output) <- c("ASIN_ID","Customer_ID","Rating","Votes","Votes_Helpful","Date")
 colnames(Groups) <- c("Group")
+
+#Map IDs to Group
+Groups <- cbind(ASIN_ID,Groups)
 summary(Output)
 str(Output)
 summary(Groups)
