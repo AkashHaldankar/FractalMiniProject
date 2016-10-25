@@ -81,7 +81,8 @@ table(TP4$Group)
 TP4$Group <- gsub('\n', '',TP4$Group)
 
 #Identify followers for the influncer Here I have selected a random Influncer
-Inf_test <- "A1CNNWWDBNUF0F"
+#Inf_test <- "A1CNNWWDBNUF0F"
+Inf_test <- "A13DQTXG02HZC1"
 f <- function(DF,ID)
   {
   TestDF <- subset(DF,Customer_ID == ID)
@@ -92,7 +93,7 @@ f <- function(DF,ID)
     ASINID <- TestDF$ASIN_ID[i]
     DATE <- as.Date(TestDF$Date1[i])
     tempDF <- subset(DF,ASIN_ID == ASINID & Date1 > DATE)
-    tempDF <- tempDF[,diffDateCumSum:=cumsum(diffDate),by=ASIN_ID]
+    tempDF <- tempDF[,diffDateCumSum:=cumsum(diffDate),by=list(ASIN_ID)]
     #print(nrow(tempDF))
     tempDF1 <- rbind(tempDF1,tempDF)
     #print(tempDF1)
@@ -108,12 +109,13 @@ Latest_Review <- as.character(TempDF$ASIN_ID[1])
 
 f1 <- function(DF,Reviewer,Review)
 {
+  IMP_Users1 <- data.frame()
   #Extract Reviews of Reviewer
   TestDF1 <- subset(DF,Customer_ID == Reviewer & ASIN_ID != Review)
   IMP_Users <- NULL
   #Extract ASIN IDs
   ASINIDS <- as.character(TestDF1$ASIN_ID)
-  print(ASINIDS)
+  #print(ASINIDS)
   #For Each Review calc User Similarity
   for(i in 1:length(ASINIDS))
   {
@@ -121,13 +123,22 @@ f1 <- function(DF,Reviewer,Review)
     Ratingbyuser <- Reviews$Rating[Reviews$Customer_ID == Reviewer]
     Reviews$RatingDiff <- abs(Reviews$Rating - Ratingbyuser)
     #print(Reviews)
-    IMP_Users <- Reviews[RatingDiff < 1]
-    Cust <- as.data.table(IMP_Users$Customer_ID)
-    Cust <- rbind(Cust,Cust)
+    IMP_Users <- as.data.frame(Reviews[RatingDiff < 1])
+    print(IMP_Users)
+    IMP_Users1 <- rbind(IMP_Users1,IMP_Users)
+    #Cust <- as.data.table(IMP_Users$Customer_ID)
+    #Cust <- rbind(Cust,Cust)
+    #print(Cust)
+    #print(nrow(Cust))
   }
-  print(unique(Cust$V1))
-  print(length(unique(Cust$V1)))
+  return(IMP_Users1)
+  #print(table(Cust$V1))
+  #print(length(unique(Cust$V1)))
   #Reviews <- subset(DF,ASIN_ID %in% ASINIDS)
   #print(Reviews)
 }
-f1(TP4,Latest_Reviewer,Latest_Review)
+IMP <- f1(TP4,Latest_Reviewer,Latest_Review)
+CustTable <- as.data.frame(table(IMP$Customer_ID))
+CustTable <- subset(CustTable,Var1 != Latest_Reviewer)
+
+#system.time(f(TP4,Inf_test)) + system.time(f1(TP4,Latest_Reviewer,Latest_Review))
