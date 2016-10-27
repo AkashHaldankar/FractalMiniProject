@@ -35,6 +35,8 @@ setnames(OutputDataTableFilter,"V1","Date1")
 #Inner Join by 3 columns
 Test <- merge(OutputDataTableFilter,OutputDataTable,by=c("ASIN_ID","Customer_ID","Date1"),all = FALSE)
 
+summary(Output)
+nrow(table(Output$Customer_ID))
 #Remove Entries with Same dates for same user within a review
 Test1 <- Test[!duplicated(Test[,1:3,with=FALSE])]
 Test1_1 <- Test[1:(199),]
@@ -103,6 +105,9 @@ f <- function(DF,ID)
   }
 TempDF <- f(TP4,Inf_test)
 
+#Extract first occurance for every category
+LetsC <- TempDF[match(unique(TempDF$Group),TempDF$Group),]
+
 #Taking only the first recent review into consideration
 Latest_Reviewer <- TempDF$Customer_ID[1]
 Latest_Review <- as.character(TempDF$ASIN_ID[1])
@@ -140,5 +145,34 @@ f1 <- function(DF,Reviewer,Review)
 IMP <- f1(TP4,Latest_Reviewer,Latest_Review)
 CustTable <- as.data.frame(table(IMP$Customer_ID))
 CustTable <- subset(CustTable,Var1 != Latest_Reviewer)
+CustTable <- setorder(CustTable,-Freq)
+nrow(CustTable)
 
 #system.time(f(TP4,Inf_test)) + system.time(f1(TP4,Latest_Reviewer,Latest_Review))
+Letsc1 <- merge(TempDF,CustTable,by.x = "Customer_ID",by.y = "Var1")
+Custidcorrect <- as.data.frame(unique(Letsc1$Customer_ID))
+
+
+Latest_Reviewer1 <- LetsC$Customer_ID[2]
+Latest_Review1 <- as.character(LetsC$ASIN_ID[2])
+
+IMP1 <- f1(TP4,Latest_Reviewer1,Latest_Review1)
+CustTable1 <- as.data.frame(table(IMP1$Customer_ID))
+CustTable1 <- subset(CustTable1,Var1 != Latest_Reviewer1)
+CustTable1 <- setorder(CustTable1,-Freq)
+nrow(CustTable1)
+
+
+Latest_Reviewer2 <- LetsC$Customer_ID[3]
+Latest_Review2 <- as.character(LetsC$ASIN_ID[3])
+
+IMP2 <- f1(TP4,Latest_Reviewer2,Latest_Review2)
+CustTable2 <- as.data.frame(table(IMP2$Customer_ID))
+CustTable2 <- subset(CustTable2,Var1 != Latest_Reviewer1)
+CustTable2 <- setorder(CustTable2,-Freq)
+nrow(CustTable2)
+
+
+CustTableAll <- rbind(CustTable1,CustTable2,CustTable)
+LetscAll <- merge(TempDF,CustTableAll,by.x = "Customer_ID",by.y = "Var1")
+CustidcorrectAll <- as.data.frame(unique(LetscAll$Customer_ID))
